@@ -1,50 +1,86 @@
 #!/usr/bin/env nextflow
 
-params.directory = "$PWD/"
-params.out = params.directory.replace("raw", "processed")
-println params.out
-params.threads = 8
-println "Running Trimmomatic on " + params.directory
-println params.directory + '*_R{1,2}_.*.fastq.gz'
-Channel.fromFilePairs(params.directory + '*_R{1,2}_001.fastq.gz', flat: true)
-        .into { trimmomatic_read_pairs }
 
+phenotype_filename = params.in.replace(".tsv","")
 
-process make_out_dir {
-    
-    executor 'local'
+process split_phenotypes {
 
-    """
-    mkdir -p ${params.out}
-    """
-}
-
-process trim {
-
-    publishDir params.out, mode: 'move'
-
-    cpus 8
+    publishDir "analysis/${phenotype_filename}/phenotypes/", mode: 'copy'
 
     input:
-        set dataset_id, file(forward), file(reverse) from trimmomatic_read_pairs
+        file 'infile.tsv' from Channel.fromPath(params.in)
+    output:
+        file '*.tsv' into phenotypes
+
+
+    """
+    #!/usr/bin/env python
+    import re
+    from slugify import slugify
+    num_format = re.compile("^[\\-]?[1-9][0-9]*\\.?[0-9]+\$")
+
+    with open('infile.tsv', 'r') as f:
+        lines = [re.split("[\\t|,]", x) for x in f.read().splitlines()]
+        vars = lines[0][1:]
+        for n, v in enumerate(vars):
+            v_slug = slugify(v)
+            file_path = "${phenotype_filename}-" + slugify(v) + ".tsv"
+            with open(file_path, 'w') as p_out:
+                p_out.write("strain\\t" + slugify(v) + "\\n")
+                for l in lines[1:]:
+                    if re.match(num_format,l[n+1]):
+                        p_out.write(l[0] +"\\t" + l[n+1] + "\\n")
+    """
+
+}
+
+phenotypes_split = phenotypes.flatten()
+
+
+process perform_mapping {
+
+    publishDir "analysis/${phenotype_filename}/mapping_Rdata/", mode: 'copy', pattern: '*.Rda'
+
+    input:
+        file 'input.tsv' from phenotypes_split
 
     output:
-        set file("${dataset_id}_1P.fq.gz"), file("${dataset_id}_2P.fq.gz") into trim_output
+        file '*-mapping.tsv' into phenotype_mappings
+        file '*-mapping.Rda' into phenotype_mappings_R
+
 
     """
-    trimmomatic PE -threads ${params.threads} $forward $reverse -baseout ${dataset_id}.fq.gz ILLUMINACLIP:/home/dec211/.linuxbrew/share/trimmomatic/adapters/NexteraPE-PE.fa:2:80:10 MINLEN:45
-    rm ${dataset_id}_1U.fq.gz
-    rm ${dataset_id}_2U.fq.gz
-    """
+    #!/usr/bin/env Rscript --vanilla
 
+    library(readr)
+    library(cegwas)
+    library(dplyr)
+    library(data.table)
+
+    df <- readr::read_tsv("input.tsv")
+
+    phenotype_name <- names(df)[[2]]
+
+    pheno <- process_pheno(df)
+    mapping_df <- gwas_mappings(pheno,  cores = 1, mapping_snp_set = F)
+    p_mapping_df <- process_mappings(mapping_df, phenotype_df = pheno, CI_size = 50, snp_grouping = 200)
+
+    readr::write_tsv(p_mapping_df, paste0(phenotype_name, '-mapping.tsv'))
+    save(p_mapping_df, file = paste0(phenotype_name, '-mapping.Rda'))
+    """
 }
 
-process perform_fq_profile {
+process concatenate_mappings {
+
+    publishDir "analysis/${phenotype_filename}/mapping/", mode: 'copy', pattern: '*.Rda'
+
     input:
-        set f1, f2 from trim_output
+        val(input_mapping) from phenotype_mappings.toSortedList()
+    output:
+        file("${phenotype_filename}-mappings.tsv")
 
     """
-    fq profile --fastqc ${params.out}\$(basename ${f1}) ${params.out}/\$(basename ${f2})
+        cat ${input_mapping.join(" ")} > ${phenotype_filename}-mappings.tsv
     """
+
 }
-
