@@ -76,8 +76,8 @@ process perform_mapping {
 
 process concatenate_mappings {
 
-    publishDir "analysis/${phenotype_filename}/mapping/", mode: 'copy', pattern: '*.Rda'
-
+    publishDir "analysis/${phenotype_filename}/mapping/", mode: 'copy'
+    
     input:
         val(input_mapping) from phenotype_mappings.toSortedList()
     output:
