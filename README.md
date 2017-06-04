@@ -2,9 +2,17 @@
 
 Perform mapping of input.tsv
 
+
+### Usage
+
+```
+# cd to directory of fastqs
+nextflow run Andersenlab/cegwas-nf --in=<input file>
+```
+
 ### Input Format
 
-
+Save trait data as a `.tsv`; Strains in column 1. Traits in column 2 - x.
 
 | strain    |   trait1 |  trait2 |   trait3 |   trait4 |
 |:----------|--------------------------:|--------------------------:|-------------------------:|--------------------------:|
@@ -16,10 +24,3 @@ Perform mapping of input.tsv
 | CB4932    |               0           |                    0      |             19.8662      |              20.326       |
 | CX11254   |              17.5516      |                   16.9135 |             19.5696      |              21.7276      |
 | CX11264   |              15.3574      |                   13.8575 |             18.9888      |              21.3832      |
-
-### Usage
-
-```
-# cd to directory of fastqs
-nextflow run Andersenlab/cegwas-nf --in=<input file>
-```
