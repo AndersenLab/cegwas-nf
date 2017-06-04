@@ -42,9 +42,11 @@ phenotypes_split = phenotypes.flatten()
 process perform_mapping {
 
     publishDir "analysis/${phenotype_filename}/mapping_Rdata/", mode: 'copy', pattern: '*.Rda'
-
+    
+    tag { input_tsv }
+    
     input:
-        file 'input.tsv' from phenotypes_split
+        file input_tsv from phenotypes_split
 
     output:
         file '*-mapping.tsv' into phenotype_mappings
@@ -59,7 +61,7 @@ process perform_mapping {
     library(dplyr)
     library(data.table)
 
-    df <- readr::read_tsv("input.tsv")
+    df <- readr::read_tsv("${input_tsv}")
 
     phenotype_name <- names(df)[[2]]
 
