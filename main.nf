@@ -4,7 +4,9 @@
 phenotype_filename = params.in.replace(".tsv","")
 
 process split_phenotypes {
-
+    
+    executor 'local'
+    
     publishDir "analysis/${phenotype_filename}/phenotypes/", mode: 'copy'
 
     input:
