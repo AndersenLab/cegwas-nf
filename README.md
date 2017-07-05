@@ -6,7 +6,7 @@ Perform mapping of input.tsv
 ### Usage
 
 ```
-# cd to directory of fastqs
+# cd to directory containing a trait file.
 nextflow run Andersenlab/cegwas-nf --in=<input file>
 ```
 
