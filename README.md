@@ -12,7 +12,7 @@ nextflow run Andersenlab/cegwas-nf --in=<input file>
 
 ### Input Format
 
-Save trait data as a `.tsv`; Strains in column 1. Traits in column 2 - x.
+Save trait data as a `.tsv`; Strains in column 1. Traits are in columns 2 and above.
 
 | strain    |   trait1 |  trait2 |   trait3 |   trait4 |
 |:----------|--------------------------:|--------------------------:|-------------------------:|--------------------------:|
