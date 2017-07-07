@@ -19,8 +19,6 @@ process split_phenotypes {
     #!/usr/bin/env python
     import re
     from slugify import slugify
-    num_format = re.compile("^[\\-]?[1-9][0-9]*\\.?[0-9]+\$")
-
     with open('infile.tsv', 'r') as f:
         lines = [re.split("[\\t|,]", x) for x in f.read().splitlines()]
         vars = lines[0][1:]
@@ -30,7 +28,7 @@ process split_phenotypes {
             with open(file_path, 'w') as p_out:
                 p_out.write("strain\\t" + slugify(v) + "\\n")
                 for l in lines[1:]:
-                    if re.match(num_format,l[n+1]):
+                    if l[n+1].isdigit():
                         p_out.write(l[0] +"\\t" + l[n+1] + "\\n")
     """
 
