@@ -28,7 +28,7 @@ process split_phenotypes {
             with open(file_path, 'w') as p_out:
                 p_out.write("strain\\t" + slugify(v) + "\\n")
                 for l in lines[1:]:
-                    if l[n+1].isdigit():
+                    if l[n+1] != "NA":
                         p_out.write(l[0] +"\\t" + l[n+1] + "\\n")
     """
 
