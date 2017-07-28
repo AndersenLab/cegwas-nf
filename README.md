@@ -2,6 +2,13 @@
 
 Perform mapping of input.tsv
 
+### Requirements
+
+The cegwas-nf pipeline requires `awesome-slugify`; Install using:
+
+```
+pip install awesome-slugify
+```
 
 ### Usage
 
