@@ -49,7 +49,6 @@ process perform_mapping {
     output:
         file '*-mapping.tsv' into phenotype_mappings
         file '*-mapping.Rda' into phenotype_mappings_R
-        file '*-genes.Rda' into phenotype_fine_mappings_R
 
     """
     #!/usr/bin/env Rscript --vanilla
@@ -66,11 +65,10 @@ process perform_mapping {
     pheno <- process_pheno(df)
     mapping_df <- gwas_mappings(pheno,  cores = 1, mapping_snp_set = F)
     p_mapping_df <- process_mappings(mapping_df, phenotype_df = pheno, CI_size = 50, snp_grouping = 200)
-    genes <- process_correlations(variant_correlation(p_mapping_df, condition_trait = F))
 
     readr::write_tsv(p_mapping_df, paste0(phenotype_name, '-mapping.tsv'))
     save(p_mapping_df, file = paste0(phenotype_name, '-mapping.Rda'))
-    save(genes, file = paste0(phenotype_name, '-genes.Rda'))
+    
     
     """
 }
